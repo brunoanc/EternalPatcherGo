@@ -72,17 +72,17 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
 
     size_t prevsz = sz;
     sz += currsz;
-    void *tmp = realloc(*(char **)ctx, sz);
+    void *tmp = realloc(*(char**)ctx, sz);
 
     if (tmp == NULL) {
-        free(*(char **)ctx);
-        *(char **)ctx = NULL;
+        free(*(char**)ctx);
+        *(char**)ctx = NULL;
         return 0;
     }
 
-    *(char **)ctx = tmp;
+    *(char**)ctx = tmp;
 
-    memcpy(*(char **)ctx + prevsz, data, currsz);
+    memcpy(*(char**)ctx + prevsz, data, currsz);
 
     return currsz;
 }
