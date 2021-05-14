@@ -1,6 +1,7 @@
 # EternalPatcherLinux
-DOOM Eternal executable patcher, rewritten in C for Linux. 
+[![Build Status](https://www.travis-ci.com/PowerBall253/EternalPatcherLinux.svg?branch=main)](https://www.travis-ci.com/PowerBall253/EternalPatcherLinux)
 
+DOOM Eternal executable patcher, rewritten in C for Linux. 
 
 ## Patches
 The patches are defined in a patch definitions file (EternalPatcher.def), which is downloaded by the tool using the update server specified in the configuration file (EternalPatcher.config). For more information, check out the original EternalPatcher [here](https://github.com/dcealopez/EternalPatcher). The default config file should look like this:
