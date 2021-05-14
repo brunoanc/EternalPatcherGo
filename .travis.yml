@@ -9,6 +9,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-10
+      - libcurl4-openssl-dev
 
 script:
   - export CC=gcc-10
