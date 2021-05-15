@@ -56,15 +56,15 @@ bool update_available();
 int download_patch_defs();
 void split_string(char *str, char delimiter, char ***array, int *array_len);
 int load_patch_defs();
-unsigned char* hex_to_bytes(char *str);
+unsigned char *hex_to_bytes(char *str);
 bool any_patches_loaded();
 bool offset_apply(char *binary_filepath, struct OffsetPatch *patch);
 bool pattern_apply(char *binary_filepath, struct PatternPatch *patch);
-struct GameBuild* get_gamebuild(char *filepath);
-struct PatchingResult* apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
+struct GameBuild *get_gamebuild(char *filepath);
+struct PatchingResult *apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
 void rm_whitespace(char *str);
-char* get_latest_patch_defs_md5(char *webpage);
+char *get_latest_patch_defs_md5(char *webpage);
 int get_update_server();
-char* get_md5_hash(char *filename);
+char *get_md5_hash(char *filename);
 
 #endif

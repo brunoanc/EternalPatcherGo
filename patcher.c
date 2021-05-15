@@ -322,7 +322,7 @@ bool any_patches_loaded()
     return false;
 }
 
-struct GameBuild* get_gamebuild(char *filepath)
+struct GameBuild *get_gamebuild(char *filepath)
 {
     if (*filepath == '\0')
         return NULL;
@@ -343,7 +343,7 @@ struct GameBuild* get_gamebuild(char *filepath)
     return NULL;
 }
 
-struct PatchingResult* apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
+struct PatchingResult *apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
 {
     struct PatchingResult *patching_results = malloc((pattern_patches->len + offset_patches->len) * sizeof(struct PatchingResult));
 

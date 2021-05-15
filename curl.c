@@ -87,7 +87,7 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
     return currsz;
 }
 
-char* get_latest_patch_defs_md5(char *webpage)
+char *get_latest_patch_defs_md5(char *webpage)
 {
     CURL *curl;
     CURLcode res;
