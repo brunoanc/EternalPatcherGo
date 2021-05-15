@@ -33,7 +33,7 @@ void split_string(char *str, char delimiter, char ***array, int *array_len)
 
     (*array_len)++;
 
-    *array = malloc(sizeof(char*) * *array_len);
+    *array = malloc(*array_len * sizeof(char*));
 
     if (!(*array)) {
         fprintf(stderr, "ERROR: Failed to allocate memory for string!\n");
