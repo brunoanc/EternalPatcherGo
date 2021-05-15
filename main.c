@@ -132,10 +132,7 @@ int main(int argc, char **argv)
 
     printf("\n%d out of %d applied.\n", successes, gamebuild->offset_patches->len + gamebuild->pattern_patches->len);
 
-    int return_value = 1;
-
-    if (successes == gamebuild->offset_patches->len + gamebuild->pattern_patches->len)
-        return_value = 0;
+    int return_value = (successes == gamebuild->offset_patches->len + gamebuild->pattern_patches->len) ? 0 : 1;
 
     for (int i = 0; i < gamebuilds->len; i++) {
         struct GameBuild gamebuild_i = g_array_index(gamebuilds, struct GameBuild, i);
