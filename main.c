@@ -26,12 +26,13 @@ extern GArray *gamebuilds;
 
 int main(int argc, char **argv)
 {
+    printf("EternalPatcherLinux v1.0 by PowerBall253 :)\n\n");
+
     bool update = false;
     bool patch = false;
     char *filepath = NULL;
 
     if (argc == 1) {
-        printf("EternalPatcherLinux v1.0 by PowerBall253\n\n");
         printf("Usage:\n");
         printf("%s [--update] [--patch /path/to/DOOMEternalx64vk.exe]\n\n", argv[0]);
         printf("--update\tUpdates the patch definitions file using the update server specified in the config file.\n");
