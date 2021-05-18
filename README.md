@@ -1,5 +1,5 @@
 # EternalPatcherLinux
-[![Build Status](https://www.travis-ci.com/PowerBall253/EternalPatcherLinux.svg?branch=main)](https://www.travis-ci.com/PowerBall253/EternalPatcherLinux)
+![Build Status](https://github.com/PowerBall253/EternalPatcherLinux/actions/workflows/cmake.yml/badge.svg)
 
 DOOM Eternal executable patcher, rewritten in C for Linux. 
 
