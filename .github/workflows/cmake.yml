@@ -17,6 +17,11 @@ jobs:
       with:
         submodules: true
 
+    - name: Install cURL package
+      run: |
+        sudo apt-get update
+        sudo apt-get install libcurl4-openssl-dev
+
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
