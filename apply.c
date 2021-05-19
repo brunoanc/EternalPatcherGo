@@ -81,7 +81,6 @@ bool pattern_apply(char *binary_filepath, struct PatternPatch *patch)
             if (buffer[i] == patch->pattern[matches]) {
                 matches++;
 
-
                 if (matches == patch->pattern_len) {
                     pattern_start_pos = ftell(exe) - (buffer_size - i) - (patch->pattern_len - 1);
                     break;
