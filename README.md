@@ -11,11 +11,11 @@ UpdateServer = "dcealopez.es";
 
 ## Usage
 ```
-./EternalPatcher [--update] [--patch /path/to/DOOMEternalx64vk.exe]
+EternalPatcher [--update] [--patch /path/to/DOOMEternalx64vk.exe]
 ```
-* --update - Checks for updates and downloads them if available.
+* `--update` - Checks for updates and downloads them if available.
 
-* --patch - Patches the given game executable using the downloaded patch definitions.
+* `--patch` - Patches the given game executable using the downloaded patch definitions.
 
 ## Compiling
 The project uses Cmake to compile, and requires curl and OpenSSL to be installed.
