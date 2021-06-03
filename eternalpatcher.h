@@ -52,19 +52,19 @@ struct GameBuild {
     GArray *pattern_patches;
 };
 
-bool update_available();
-int download_patch_defs();
+bool update_available(void);
+int download_patch_defs(void);
 void split_string(char *str, char delimiter, char ***array, int *array_len);
-int load_patch_defs();
+int load_patch_defs(void);
 unsigned char *hex_to_bytes(char *str);
-bool any_patches_loaded();
+bool any_patches_loaded(void);
 bool offset_apply(char *binary_filepath, struct OffsetPatch *patch);
 bool pattern_apply(char *binary_filepath, struct PatternPatch *patch);
 struct GameBuild *get_gamebuild(char *filepath);
 struct PatchingResult *apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
 void rm_whitespace(char *str);
 char *get_latest_patch_defs_md5(char *webpage);
-int get_update_server();
+int get_update_server(void);
 char *get_md5_hash(char *filename);
 
 #endif

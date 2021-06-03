@@ -26,7 +26,7 @@
 extern const int patcher_version;
 char update_server[128];
 
-int get_update_server()
+int get_update_server(void)
 {
     FILE *config = fopen("EternalPatcher.config", "r");
 
@@ -117,7 +117,7 @@ char *get_latest_patch_defs_md5(char *webpage)
     return "";
 }
 
-int download_patch_defs()
+int download_patch_defs(void)
 {
     CURL *curl;
     FILE *fp;

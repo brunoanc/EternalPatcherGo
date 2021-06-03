@@ -29,7 +29,7 @@ extern char update_server[128];
 const int patcher_version = 3;
 GArray *gamebuilds;
 
-bool update_available()
+bool update_available(void)
 {
     if(get_update_server() == -1)
         return false;
@@ -58,7 +58,7 @@ bool update_available()
     return update_available;
 }
 
-int load_patch_defs()
+int load_patch_defs(void)
 {
     FILE *patch_defs = fopen("EternalPatcher.def", "rb");
 
@@ -310,7 +310,7 @@ int load_patch_defs()
     return 0;
 }
 
-bool any_patches_loaded()
+bool any_patches_loaded(void)
 {   
     for (int i = 0; i < gamebuilds->len; i++) {
         struct GameBuild gamebuild_i = g_array_index(gamebuilds, struct GameBuild, i);
