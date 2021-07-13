@@ -132,22 +132,5 @@ int main(int argc, char **argv)
     free(patching_result);
 
     printf("\n%d out of %d applied.\n", successes, gamebuild->offset_patches->len + gamebuild->pattern_patches->len);
-
-    int return_value = (successes == gamebuild->offset_patches->len + gamebuild->pattern_patches->len) ? 0 : 1;
-
-    for (int i = 0; i < gamebuilds->len; i++) {
-        struct GameBuild gamebuild_i = g_array_index(gamebuilds, struct GameBuild, i);
-
-        free(gamebuild_i.id);
-        free(gamebuild_i.exe_filename);
-        free(gamebuild_i.md5_checksum);
-        free(gamebuild_i.patch_group_ids);
-
-        g_array_free(gamebuild_i.offset_patches, true);
-        g_array_free(gamebuild_i.pattern_patches, true);
-    }
-
-    g_array_free(gamebuilds, true);
-
-    return return_value;
+    return (successes == gamebuild->offset_patches->len + gamebuild->pattern_patches->len) ? 0 : 1;
 }
