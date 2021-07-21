@@ -4,6 +4,7 @@ project(EternalPatcher)
 set(CMAKE_C_STANDARD 99)
 
 file(GLOB SOURCES
+        ./eternalpatcher.h
         ./main.c
         ./patcher.c
         ./utils.c
