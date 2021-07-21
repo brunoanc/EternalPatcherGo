@@ -324,7 +324,6 @@ struct GameBuild *get_gamebuild(const char *filepath)
     }
 
     free(file_md5);
-
     return NULL;
 }
 

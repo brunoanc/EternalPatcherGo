@@ -132,8 +132,11 @@ int main(int argc, char **argv)
         free(patching_result[i].description);
     }
 
-    free(patching_result);
+    int patches_applied = gamebuild->offset_patches->len + gamebuild->pattern_patches->len;
 
-    printf("\n%d out of %d applied.\n", successes, gamebuild->offset_patches->len + gamebuild->pattern_patches->len);
-    return (successes == gamebuild->offset_patches->len + gamebuild->pattern_patches->len) ? 0 : 1;
+    free(patching_result);
+    g_array_free(gamebuilds, true);
+
+    printf("\n%d out of %d applied.\n", successes, patches_applied);
+    return (successes == patches_applied) ? 0 : 1;
 }
