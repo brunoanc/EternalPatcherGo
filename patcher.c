@@ -31,7 +31,7 @@ GArray *gamebuilds;
 
 bool update_available(void)
 {
-    if(get_update_server() == -1)
+    if (get_update_server() == -1)
         return false;
 
     char *patch_defs_md5 = get_md5_hash("EternalPatcher.def");
@@ -39,7 +39,7 @@ bool update_available(void)
     if (patch_defs_md5[0] == '\0')
         return true;
 
-    char patch_defs_md5_webpage[128];
+    char patch_defs_md5_webpage[256];
     sprintf(patch_defs_md5_webpage, "http://%s/EternalPatcher_v%d.md5", update_server, patcher_version);
 
     char *latest_patch_defs_md5 = get_latest_patch_defs_md5(patch_defs_md5_webpage);
@@ -67,7 +67,7 @@ int load_patch_defs(void)
         return -1;
     }
 
-    char *current_line = malloc(256);
+    char current_line[256];
 
     if (!current_line) {
         fprintf(stderr, "ERROR: Failed to allocate memory for reading line!\n");
@@ -108,31 +108,25 @@ int load_patch_defs(void)
 
             split_string(gamebuild_data[2], ',', &patch_group_ids, &patch_group_ids_len);
 
-            struct GameBuild *new_gamebuild = malloc(sizeof(struct GameBuild));
+            struct GameBuild new_gamebuild;
+            new_gamebuild.id = strdup(data_def[0]);
+            new_gamebuild.exe_filename = strdup(gamebuild_data[0]);
+            new_gamebuild.md5_checksum = strdup(gamebuild_data[1]);
+            new_gamebuild.patch_group_ids = malloc(patch_group_ids_len * sizeof(char*));
+            new_gamebuild.patch_group_ids_len = patch_group_ids_len;
+            new_gamebuild.offset_patches = g_array_new(false, false, sizeof(struct OffsetPatch));
+            new_gamebuild.pattern_patches = g_array_new(false, false, sizeof(struct PatternPatch));
 
-            if (!new_gamebuild) {
-                fprintf(stderr, "ERROR: Failed to allocate memory for gamebuild!\n");
-                exit(1);
-            }
-
-            new_gamebuild->id = strdup(data_def[0]);
-            new_gamebuild->exe_filename = strdup(gamebuild_data[0]);
-            new_gamebuild->md5_checksum = strdup(gamebuild_data[1]);
-            new_gamebuild->patch_group_ids = malloc(patch_group_ids_len * sizeof(char*));
-            new_gamebuild->patch_group_ids_len = patch_group_ids_len;
-            new_gamebuild->offset_patches = g_array_new(false, false, sizeof(struct OffsetPatch));
-            new_gamebuild->pattern_patches = g_array_new(false, false, sizeof(struct PatternPatch));
-
-            if (!new_gamebuild->id || !new_gamebuild->exe_filename || !new_gamebuild->md5_checksum || !new_gamebuild->patch_group_ids) {
+            if (!new_gamebuild.id || !new_gamebuild.exe_filename || !new_gamebuild.md5_checksum || !new_gamebuild.patch_group_ids) {
                 fprintf(stderr, "ERROR: Failed to allocate memory for gamebuild!\n");
                 exit(1);
             }
 
             for (int i = 0; i < patch_group_ids_len; i++) {
-                new_gamebuild->patch_group_ids[i] = strdup(patch_group_ids[i]);
+                new_gamebuild.patch_group_ids[i] = strdup(patch_group_ids[i]);
             }
 
-            g_array_append_val(gamebuilds, *new_gamebuild);
+            g_array_append_val(gamebuilds, new_gamebuild);
 
             free(gamebuild_data);
             free(patch_group_ids);
@@ -179,28 +173,23 @@ int load_patch_defs(void)
             unsigned char *hex_patch = hex_to_bytes(patch_data[4]);
 
             if (patch_type == OFFSET_PATCH) {
-                struct OffsetPatch *offset_patch = malloc(sizeof(struct OffsetPatch));
+                struct OffsetPatch offset_patch;
 
-                if (!offset_patch) {
+                offset_patch.description = strdup(patch_data[0]);
+                offset_patch.offset = strtol(patch_data[3], NULL, 16);
+                offset_patch.patch_byte_array = malloc(strlen(patch_data[4]) / 2);
+                offset_patch.patch_byte_array_len = strlen(patch_data[4]) / 2;
+
+                if (!offset_patch.description || !offset_patch.patch_byte_array) {
                     fprintf(stderr, "ERROR: Failed to allocate memory for offset patch!\n");
                     exit(1);
                 }
 
-                offset_patch->description = strdup(patch_data[0]);
-                offset_patch->offset = strtol(patch_data[3], NULL, 16);
-                offset_patch->patch_byte_array = malloc(strlen(patch_data[4]) / 2);
-                offset_patch->patch_byte_array_len = strlen(patch_data[4]) / 2;
-
-                if (!offset_patch->description || !offset_patch->patch_byte_array) {
-                    fprintf(stderr, "ERROR: Failed to allocate memory for offset patch!\n");
-                    exit(1);
-                }
-
-                memcpy(offset_patch->patch_byte_array, hex_patch, offset_patch->patch_byte_array_len);
+                memcpy(offset_patch.patch_byte_array, hex_patch, offset_patch.patch_byte_array_len);
 
                 free(hex_patch);
 
-                if (offset_patch->description[0] == '\0')
+                if (offset_patch.description[0] == '\0')
                     continue;
 
                 for (int i = 0; i < patch_group_ids_len; i++) {
@@ -222,7 +211,7 @@ int load_patch_defs(void)
                         for (int k = 0; k < gamebuild_j.offset_patches->len; k++) {
                             struct OffsetPatch current_patch = g_array_index(gamebuild_j.offset_patches, struct OffsetPatch, k);
 
-                            if (!strcmp(current_patch.description, offset_patch->description)) {
+                            if (!strcmp(current_patch.description, offset_patch.description)) {
                                 already_exists = true;
                                 break;
                             }
@@ -231,38 +220,33 @@ int load_patch_defs(void)
                         if (already_exists)
                             break;
 
-                        g_array_append_val(gamebuild_j.offset_patches, *offset_patch);
+                        g_array_append_val(gamebuild_j.offset_patches, offset_patch);
                     }
                 }
             }
             else {
                 unsigned char *hex_pattern = hex_to_bytes(patch_data[3]);
 
-                struct PatternPatch *pattern_patch = malloc(sizeof(struct PatternPatch));
+                struct PatternPatch pattern_patch;
 
-                if (!pattern_patch) {
+                pattern_patch.description = strdup(patch_data[0]);
+                pattern_patch.pattern = malloc(strlen(patch_data[3]) / 2);
+                pattern_patch.pattern_len = strlen(patch_data[3]) / 2;
+                pattern_patch.patch_byte_array = malloc(strlen(patch_data[4]) / 2);
+                pattern_patch.patch_byte_array_len = strlen(patch_data[4]) / 2;
+
+                if (!pattern_patch.description || !pattern_patch.pattern || !pattern_patch.patch_byte_array) {
                     fprintf(stderr, "ERROR: Failed to allocate memory for pattern patch!\n");
                     exit(1);
                 }
 
-                pattern_patch->description = strdup(patch_data[0]);
-                pattern_patch->pattern = malloc(strlen(patch_data[3]) / 2);
-                pattern_patch->pattern_len = strlen(patch_data[3]) / 2;
-                pattern_patch->patch_byte_array = malloc(strlen(patch_data[4]) / 2);
-                pattern_patch->patch_byte_array_len = strlen(patch_data[4]) / 2;
-
-                if (!pattern_patch->description || !pattern_patch->pattern || !pattern_patch->patch_byte_array) {
-                    fprintf(stderr, "ERROR: Failed to allocate memory for pattern patch!\n");
-                    exit(1);
-                }
-
-                memcpy(pattern_patch->pattern, hex_pattern, pattern_patch->pattern_len);
-                memcpy(pattern_patch->patch_byte_array, hex_patch, pattern_patch->patch_byte_array_len);
+                memcpy(pattern_patch.pattern, hex_pattern, pattern_patch.pattern_len);
+                memcpy(pattern_patch.patch_byte_array, hex_patch, pattern_patch.patch_byte_array_len);
 
                 free(hex_pattern);
                 free(hex_patch);
 
-                if (pattern_patch->description[0] == '\0')
+                if (pattern_patch.description[0] == '\0')
                     continue;
                 
                 for (int i = 0; i < patch_group_ids_len; i++) {
@@ -284,7 +268,7 @@ int load_patch_defs(void)
                         for (int k = 0; k < gamebuild_j.pattern_patches->len; k++) {
                             struct PatternPatch current_patch = g_array_index(gamebuild_j.pattern_patches, struct PatternPatch, k);
 
-                            if (!strcmp(current_patch.description, pattern_patch->description)) {
+                            if (!strcmp(current_patch.description, pattern_patch.description)) {
                                 already_exists = true;
                                 break;
                             }
@@ -293,7 +277,7 @@ int load_patch_defs(void)
                         if (already_exists)
                             break;
 
-                        g_array_append_val(gamebuild_j.pattern_patches, *pattern_patch);
+                        g_array_append_val(gamebuild_j.pattern_patches, pattern_patch);
                     }
                 }
             }
@@ -304,8 +288,6 @@ int load_patch_defs(void)
 
         free(data_def);
     }
-
-    free(current_line);
 
     return 0;
 }
@@ -322,7 +304,7 @@ bool any_patches_loaded(void)
     return false;
 }
 
-struct GameBuild *get_gamebuild(char *filepath)
+struct GameBuild *get_gamebuild(const char *filepath)
 {
     if (*filepath == '\0')
         return NULL;
@@ -343,7 +325,7 @@ struct GameBuild *get_gamebuild(char *filepath)
     return NULL;
 }
 
-struct PatchingResult *apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
+struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
 {
     struct PatchingResult *patching_results = malloc((pattern_patches->len + offset_patches->len) * sizeof(struct PatchingResult));
 

@@ -52,19 +52,26 @@ struct GameBuild {
     GArray *pattern_patches;
 };
 
+// Patcher
 bool update_available(void);
-int download_patch_defs(void);
-void split_string(char *str, char delimiter, char ***array, int *array_len);
 int load_patch_defs(void);
-unsigned char *hex_to_bytes(char *str);
 bool any_patches_loaded(void);
-bool offset_apply(char *binary_filepath, struct OffsetPatch *patch);
-bool pattern_apply(char *binary_filepath, struct PatternPatch *patch);
-struct GameBuild *get_gamebuild(char *filepath);
-struct PatchingResult *apply_patches(char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
-void rm_whitespace(char *str);
-char *get_latest_patch_defs_md5(char *webpage);
+struct GameBuild *get_gamebuild(const char *filepath);
+struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
+
+// Curl
 int get_update_server(void);
-char *get_md5_hash(char *filename);
+char *get_latest_patch_defs_md5(const char *webpage);
+int download_patch_defs(void);
+
+// Apply patches
+bool offset_apply(const char *binary_filepath, struct OffsetPatch *patch);
+bool pattern_apply(const char *binary_filepath, struct PatternPatch *patch);
+
+// Utils
+void split_string(char *str, const char delimiter, char ***array, int *array_len);
+unsigned char *hex_to_bytes(const char *str);
+void rm_whitespace(char *str);
+char *get_md5_hash(const char *filename);
 
 #endif

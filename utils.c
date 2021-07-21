@@ -22,7 +22,7 @@
 #include <ctype.h>
 #include <openssl/md5.h>
 
-void split_string(char *str, char delimiter, char ***array, int *array_len)
+void split_string(char *str, const char delimiter, char ***array, int *array_len)
 {
     *array_len = 0;
 
@@ -53,7 +53,7 @@ void split_string(char *str, char delimiter, char ***array, int *array_len)
     (*array)[0] = str;
 }
 
-unsigned char *hex_to_bytes(char *str)
+unsigned char *hex_to_bytes(const char *str)
 {
     unsigned char *bytes = malloc(strlen(str) / 2);
 
@@ -86,7 +86,7 @@ void rm_whitespace(char *str)
     }
 }
 
-char *get_md5_hash(char *filename)
+char *get_md5_hash(const char *filename)
 {
     FILE *f = fopen(filename, "rb");
 

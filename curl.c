@@ -87,7 +87,7 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
     return currsz;
 }
 
-char *get_latest_patch_defs_md5(char *webpage)
+char *get_latest_patch_defs_md5(const char *webpage)
 {
     CURL *curl;
     CURLcode res;
@@ -123,7 +123,7 @@ int download_patch_defs(void)
     FILE *fp;
     CURLcode res;
 
-    char download_url[128];
+    char download_url[256];
     sprintf(download_url, "http://%s/EternalPatcher_v%d.def", update_server, patcher_version);
 
     curl = curl_easy_init();
