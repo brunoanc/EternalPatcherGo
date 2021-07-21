@@ -22,8 +22,6 @@
 
 #include "eternalpatcher.h"
 
-extern GArray *gamebuilds;
-
 int main(int argc, char **argv)
 {
     printf("EternalPatcherLinux v1.0 by PowerBall253 :)\n\n");
@@ -32,6 +30,7 @@ int main(int argc, char **argv)
     bool patch = false;
     char *filepath = NULL;
 
+    // Print usage
     if (argc == 1) {
         printf("Usage:\n");
         printf("%s [--update] [--patch /path/to/DOOMEternalx64vk.exe]\n\n", argv[0]);
@@ -40,6 +39,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // Check program arguments
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--patch") && !patch) {
             if (i > argc - 2) {
@@ -60,6 +60,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // Update the patch definitions file
     if (update) {
         printf("Checking for updates...\n");
 
@@ -86,6 +87,7 @@ int main(int argc, char **argv)
             return 0;
     }
 
+    // Load patches from the patch defs file
     printf("\nLoading patch definitions file...\n");
 
     if(load_patch_defs() == -1) {
@@ -100,6 +102,7 @@ int main(int argc, char **argv)
 
     printf("Done.\n");
 
+    // Get executable's gamebuild
     printf("\nChecking game builds...\n");
 
     struct GameBuild *gamebuild = get_gamebuild(filepath);
@@ -111,10 +114,10 @@ int main(int argc, char **argv)
 
     printf("%s detected.\n", gamebuild->id);
 
-    int successes = 0;
-
+    // Apply patches to the executable
     printf("\nApplying patches...\n");
 
+    int successes = 0;
     struct PatchingResult *patching_result = apply_patches(filepath, gamebuild->offset_patches, gamebuild->pattern_patches);
 
     for (int i = 0; i < gamebuild->offset_patches->len + gamebuild->pattern_patches->len; i++) {

@@ -23,9 +23,9 @@
 
 #include "eternalpatcher.h"
 
-extern const int patcher_version;
 char update_server[128];
 
+// Get update server from config file
 int get_update_server(void)
 {
     FILE *config = fopen("EternalPatcher.config", "r");
@@ -65,6 +65,7 @@ int get_update_server(void)
     return 0;
 }
 
+// Used to write data to memory from curl
 size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
 {
     static size_t sz = 0;
@@ -87,6 +88,7 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
     return currsz;
 }
 
+// Get latest patch definitions MD5 from the update server
 char *get_latest_patch_defs_md5(const char *webpage)
 {
     CURL *curl;
@@ -117,6 +119,7 @@ char *get_latest_patch_defs_md5(const char *webpage)
     return "";
 }
 
+// Download the latest patch definitions from the update server
 int download_patch_defs(void)
 {
     CURL *curl;

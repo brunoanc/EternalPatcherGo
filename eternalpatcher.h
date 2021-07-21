@@ -52,6 +52,11 @@ struct GameBuild {
     GArray *pattern_patches;
 };
 
+// Global variables
+extern const int patcher_version;
+extern GArray *gamebuilds;
+extern char update_server[128];
+
 // Patcher
 bool update_available(void);
 int load_patch_defs(void);

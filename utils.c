@@ -22,6 +22,7 @@
 #include <ctype.h>
 #include <openssl/md5.h>
 
+// Split a given string using the given char as a delimiter into the given array
 void split_string(char *str, const char delimiter, char ***array, int *array_len)
 {
     *array_len = 0;
@@ -53,6 +54,7 @@ void split_string(char *str, const char delimiter, char ***array, int *array_len
     (*array)[0] = str;
 }
 
+// Convert hex string to a byte array
 unsigned char *hex_to_bytes(const char *str)
 {
     unsigned char *bytes = malloc(strlen(str) / 2);
@@ -72,6 +74,7 @@ unsigned char *hex_to_bytes(const char *str)
     return bytes;
 }
 
+// Remove whitespace from string
 void rm_whitespace(char *str)
 {
     int j = 0;
@@ -86,6 +89,7 @@ void rm_whitespace(char *str)
     }
 }
 
+// Get file's MD5 hash
 char *get_md5_hash(const char *filename)
 {
     FILE *f = fopen(filename, "rb");

@@ -25,10 +25,10 @@
 #define OFFSET_PATCH 0
 #define PATTERN_PATCH 1
 
-extern char update_server[128];
 const int patcher_version = 3;
 GArray *gamebuilds;
 
+// Check if there is any patch defs update available
 bool update_available(void)
 {
     if (get_update_server() == -1)
@@ -58,6 +58,7 @@ bool update_available(void)
     return update_available;
 }
 
+// Load patch defs from file
 int load_patch_defs(void)
 {
     FILE *patch_defs = fopen("EternalPatcher.def", "rb");
@@ -292,6 +293,7 @@ int load_patch_defs(void)
     return 0;
 }
 
+// Check if there are any patches loaded
 bool any_patches_loaded(void)
 {   
     for (int i = 0; i < gamebuilds->len; i++) {
@@ -304,6 +306,7 @@ bool any_patches_loaded(void)
     return false;
 }
 
+// Get the given executable's gamebuild from the patch defs
 struct GameBuild *get_gamebuild(const char *filepath)
 {
     if (*filepath == '\0')
@@ -325,6 +328,7 @@ struct GameBuild *get_gamebuild(const char *filepath)
     return NULL;
 }
 
+// Apply the loaded patches to the executable
 struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
 {
     struct PatchingResult *patching_results = malloc((pattern_patches->len + offset_patches->len) * sizeof(struct PatchingResult));

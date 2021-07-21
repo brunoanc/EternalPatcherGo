@@ -21,6 +21,7 @@
 
 #include "eternalpatcher.h"
 
+// Apply the given offset patch
 bool offset_apply(const char *binary_filepath, struct OffsetPatch *patch)
 {
     if (patch->patch_byte_array_len == 0)
@@ -45,6 +46,7 @@ bool offset_apply(const char *binary_filepath, struct OffsetPatch *patch)
     return true;
 }
 
+// Apply the given pattern patch
 bool pattern_apply(const char *binary_filepath, struct PatternPatch *patch)
 {
     if (patch->patch_byte_array_len == 0 || patch->pattern_len == 0 || patch->patch_byte_array_len != patch->pattern_len)
