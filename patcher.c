@@ -123,9 +123,8 @@ int load_patch_defs(void)
                 exit(1);
             }
 
-            for (int i = 0; i < patch_group_ids_len; i++) {
+            for (int i = 0; i < patch_group_ids_len; i++)
                 new_gamebuild.patch_group_ids[i] = strdup(patch_group_ids[i]);
-            }
 
             g_array_append_val(gamebuilds, new_gamebuild);
 
@@ -167,9 +166,8 @@ int load_patch_defs(void)
             if (patch_group_ids_len == 0)
                 continue;
             
-            for (int i = 0; i < patch_group_ids_len; i++) {
+            for (int i = 0; i < patch_group_ids_len; i++)
                 rm_whitespace(patch_group_ids[i]);
-            }
 
             unsigned char *hex_patch = hex_to_bytes(patch_data[4]);
 
