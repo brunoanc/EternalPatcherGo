@@ -80,9 +80,8 @@ int load_patch_defs(void)
     while (fgets(current_line, 256, patch_defs) != NULL) {
         rm_whitespace(current_line);
 
-        if (strchr(current_line, '#') == current_line) {
+        if (strchr(current_line, '#') == current_line)
             continue;
-        }
 
         char **data_def;
         int data_def_len = 0;
