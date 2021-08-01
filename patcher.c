@@ -69,12 +69,6 @@ int load_patch_defs(void)
     }
 
     char current_line[256];
-
-    if (!current_line) {
-        fprintf(stderr, "ERROR: Failed to allocate memory for reading line!\n");
-        exit(1);
-    }
-
     gamebuilds = g_array_new(false, false, sizeof(struct GameBuild));
 
     while (fgets(current_line, 256, patch_defs) != NULL) {
