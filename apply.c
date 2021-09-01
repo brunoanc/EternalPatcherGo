@@ -54,7 +54,6 @@ bool pattern_apply(const char *binary_filepath, struct PatternPatch *patch)
     
     int buffer_size = 1024;
     int matches = 0;
-    long current_file_pos = 0;
     long pattern_start_pos = -1;
 
     FILE *exe = fopen(binary_filepath, "rb+");

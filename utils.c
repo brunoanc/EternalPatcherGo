@@ -104,7 +104,7 @@ char *get_md5_hash(const char *filename)
 
     MD5_Init(&mdContext);
 
-    while ((bytes = fread(data, 1, 4096, f)) != 0)
+    while ((bytes = (int)fread(data, 1, 4096, f)) != 0)
         MD5_Update(&mdContext, data, bytes);
 
     MD5_Final(hash, &mdContext);

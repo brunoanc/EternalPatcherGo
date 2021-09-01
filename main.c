@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
     // Check program arguments
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "--patch") && !patch) {
+        if (strcmp(argv[i], "--patch") == 0 && !patch) {
             if (i > argc - 2) {
                 fprintf(stderr, "ERROR: No executable was specified for patching!\n");
                 return 1;
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
             patch = true;
             filepath = argv[i + 1];
         }
-        else if (!strcmp(argv[i], "--update")) {
+        else if (strcmp(argv[i], "--update") == 0) {
             update = true;
         }
     }
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
         free(patching_result[i].description);
     }
 
-    int patches_applied = gamebuild->offset_patches->len + gamebuild->pattern_patches->len;
+    int patches_applied = (int)(gamebuild->offset_patches->len + gamebuild->pattern_patches->len);
 
     free(patching_result);
     g_array_free(gamebuilds, true);

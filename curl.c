@@ -111,7 +111,6 @@ char *get_latest_patch_defs_md5(const char *webpage)
         }
 
         curl_easy_cleanup(curl);
-
         return pagedata;
     }
 
