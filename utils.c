@@ -20,7 +20,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
+
+#define MD5_DIGEST_LENGTH 16
 
 // Split a given string using the given char as a delimiter into the given array
 void split_string(char *str, const char delimiter, char ***array, int *array_len)
@@ -97,17 +99,19 @@ char *get_md5_hash(const char *filename)
     if (!f)
         return "";
 
-    MD5_CTX mdContext;
-    int bytes;
+    int read;
+    int md5_length;
     unsigned char data[4096];
     unsigned char hash[MD5_DIGEST_LENGTH];
 
-    MD5_Init(&mdContext);
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_md5(), NULL);
 
-    while ((bytes = (int)fread(data, 1, 4096, f)) != 0)
-        MD5_Update(&mdContext, data, bytes);
+    while ((read = (int)fread(data, 1, 4096, f)) != 0)
+        EVP_DigestUpdate(ctx, data, read);
 
-    MD5_Final(hash, &mdContext);
+    EVP_DigestFinal_ex(ctx, hash, &md5_length);
+    EVP_MD_CTX_free(ctx);
 
     char *hash_str = malloc(MD5_DIGEST_LENGTH * 2 + 1);
 
