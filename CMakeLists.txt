@@ -14,7 +14,7 @@ file(GLOB SOURCES
 
 find_package(PkgConfig REQUIRED)
 find_package(CURL REQUIRED)
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL "3.0" REQUIRED)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 include_directories(${GLIB_INCLUDE_DIRS})
