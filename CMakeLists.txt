@@ -17,7 +17,7 @@ file(GLOB SOURCES
 if(DEFINED ENV{ETERNALPATCHERLINUX_STATIC})
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(CURL REQUIRED libcurl)
-        pkg_check_modules(OPENSSL REQUIRED openssl)
+        pkg_check_modules(OPENSSL REQUIRED openssl>=3.0)
         pkg_check_modules(BROTLICOMMON REQUIRED libbrotlicommon)
         set(CMAKE_C_FLAGS "${CURL_STATIC_CFLAGS} ${OPENSSL_STATIC_CFLAGS} ${BROTLICOMMON_STATIC_CFLAGS} -static -O2 -Wall -Werror -s")
 else()
