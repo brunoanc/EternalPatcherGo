@@ -7,6 +7,9 @@ on:
     tags-ignore:
       - '**'
 
+env:
+  ETERNALPATCHERLINUX_STATIC: '1'
+
 jobs:
   build:
     runs-on: ubuntu-latest
