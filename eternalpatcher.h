@@ -20,7 +20,8 @@
 #define ETERNALPATCHER_H
 
 #include <stdbool.h>
-#include <glib.h>
+#include "cvector/cvector.h"
+#include "cvector/cvector_utils.h"
 
 struct PatternPatch {
     char *description;
@@ -48,21 +49,19 @@ struct GameBuild {
     char *md5_checksum;
     char **patch_group_ids;
     int patch_group_ids_len;
-    GArray *offset_patches;
-    GArray *pattern_patches;
+    cvector_vector_type(struct OffsetPatch) offset_patches;
+    cvector_vector_type(struct PatternPatch) pattern_patches;
 };
 
 // Global variables
 extern const int patcher_version;
-extern GArray *gamebuilds;
 extern char update_server[128];
 
 // Patcher
 bool update_available(void);
-int load_patch_defs(void);
-bool any_patches_loaded(void);
-struct GameBuild *get_gamebuild(const char *filepath);
-struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset_patches, GArray *pattern_patches);
+struct GameBuild load_patch_defs(const char *exe_md5);
+struct PatchingResult *apply_patches(const char *binary_filepath,
+    cvector_vector_type(struct OffsetPatch) offset_patches, cvector_vector_type(struct PatternPatch) pattern_patches);
 
 // Curl
 int get_update_server(void);

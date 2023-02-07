@@ -18,7 +18,7 @@ EternalPatcher [--update] [--patch /path/to/DOOMEternalx64vk.exe]
 * `--patch` - Patches the given game executable using the downloaded patch definitions.
 
 ## Compiling
-The project uses Cmake to compile, and requires curl and OpenSSL to be installed.
+The project uses CMake to compile, and requires curl and OpenSSL to be installed.
 
 First clone the repo by running:
 

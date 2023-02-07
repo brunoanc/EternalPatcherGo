@@ -26,7 +26,6 @@
 #define PATTERN_PATCH 1
 
 const int patcher_version = 3;
-GArray *gamebuilds;
 
 // Check if there is any patch defs update available
 bool update_available(void)
@@ -59,17 +58,25 @@ bool update_available(void)
 }
 
 // Load patch defs from file
-int load_patch_defs(void)
+struct GameBuild load_patch_defs(const char *exe_md5)
 {
+    struct GameBuild gamebuild;
+    gamebuild.id = NULL;
+    gamebuild.exe_filename = NULL;
+    gamebuild.md5_checksum = NULL;
+    gamebuild.patch_group_ids = NULL;
+    gamebuild.patch_group_ids_len = 0;
+    gamebuild.offset_patches = NULL;
+    gamebuild.pattern_patches = NULL;
+
     FILE *patch_defs = fopen("EternalPatcher.def", "rb");
 
     if (!patch_defs) {
         fprintf(stderr, "ERROR: Failed to open patches file!\n");
-        return -1;
+        return gamebuild;
     }
 
     char current_line[256];
-    gamebuilds = g_array_new(false, false, sizeof(struct GameBuild));
 
     while (fgets(current_line, 256, patch_defs) != NULL) {
         rm_whitespace(current_line);
@@ -91,8 +98,11 @@ int load_patch_defs(void)
 
             split_string(data_def[1], ':', &gamebuild_data, &gamebuild_data_len);
 
-            if (gamebuild_data_len != 3)
+            if (gamebuild_data_len != 3) {
+                free(gamebuild_data);
+                free(data_def);
                 continue;
+            }
 
             for (int i = 0; i < gamebuild_data_len; i++)
                 rm_whitespace(gamebuild_data[i]);
@@ -102,42 +112,55 @@ int load_patch_defs(void)
 
             split_string(gamebuild_data[2], ',', &patch_group_ids, &patch_group_ids_len);
 
-            struct GameBuild new_gamebuild;
-            new_gamebuild.id = strdup(data_def[0]);
-            new_gamebuild.exe_filename = strdup(gamebuild_data[0]);
-            new_gamebuild.md5_checksum = strdup(gamebuild_data[1]);
-            new_gamebuild.patch_group_ids = malloc(patch_group_ids_len * sizeof(char*));
-            new_gamebuild.patch_group_ids_len = patch_group_ids_len;
-            new_gamebuild.offset_patches = g_array_new(false, false, sizeof(struct OffsetPatch));
-            new_gamebuild.pattern_patches = g_array_new(false, false, sizeof(struct PatternPatch));
+            if (strcmp(exe_md5, gamebuild_data[1]) != 0) {
+                free(gamebuild_data);
+                free(patch_group_ids);
+                free(data_def);
+                continue;
+            }
 
-            if (!new_gamebuild.id || !new_gamebuild.exe_filename || !new_gamebuild.md5_checksum || !new_gamebuild.patch_group_ids) {
+            gamebuild.id = strdup(data_def[0]);
+            gamebuild.exe_filename = strdup(gamebuild_data[0]);
+            gamebuild.md5_checksum = strdup(gamebuild_data[1]);
+            gamebuild.patch_group_ids = malloc(patch_group_ids_len * sizeof(char*));
+            gamebuild.patch_group_ids_len = patch_group_ids_len;
+
+            if (!gamebuild.id || !gamebuild.exe_filename || !gamebuild.md5_checksum || !gamebuild.patch_group_ids) {
                 fprintf(stderr, "ERROR: Failed to allocate memory for gamebuild!\n");
                 exit(1);
             }
 
             for (int i = 0; i < patch_group_ids_len; i++)
-                new_gamebuild.patch_group_ids[i] = strdup(patch_group_ids[i]);
-
-            g_array_append_val(gamebuilds, new_gamebuild);
+                gamebuild.patch_group_ids[i] = strdup(patch_group_ids[i]);
 
             free(gamebuild_data);
             free(patch_group_ids);
         }
         else {
+            if (gamebuild.id == NULL) {
+                free(data_def);
+                continue;
+            }
+
             char **patch_data;
             int patch_data_len = 0;
 
             split_string(data_def[1], ':', &patch_data, &patch_data_len);
 
-            if (patch_data_len != 5)
+            if (patch_data_len != 5) {
+                free(patch_data);
+                free(data_def);
                 continue;
+            }
 
             for (int i = 0; i < patch_data_len; i++)
                 rm_whitespace(patch_data[i]);
 
-            if (strlen(patch_data[4]) % 2 != 0)
+            if (strlen(patch_data[4]) % 2 != 0) {
+                free(patch_data);
+                free(data_def);
                 continue;
+            }
 
             int patch_type;
 
@@ -148,6 +171,8 @@ int load_patch_defs(void)
                 patch_type = PATTERN_PATCH;
             }
             else {
+                free(patch_data);
+                free(data_def);
                 continue;
             }
 
@@ -156,8 +181,12 @@ int load_patch_defs(void)
 
             split_string(patch_data[2], ',', &patch_group_ids, &patch_group_ids_len);
 
-            if (patch_group_ids_len == 0)
+            if (patch_group_ids_len == 0) {
+                free(patch_data);
+                free(patch_group_ids);
+                free(data_def);
                 continue;
+            }
             
             for (int i = 0; i < patch_group_ids_len; i++)
                 rm_whitespace(patch_group_ids[i]);
@@ -178,47 +207,44 @@ int load_patch_defs(void)
                 }
 
                 memcpy(offset_patch.patch_byte_array, hex_patch, offset_patch.patch_byte_array_len);
-
                 free(hex_patch);
 
-                if (offset_patch.description[0] == '\0')
+                if (offset_patch.description[0] == '\0') {
+                    free(patch_data);
+                    free(patch_group_ids);
+                    free(data_def);
                     continue;
+                }
 
                 for (int i = 0; i < patch_group_ids_len; i++) {
-                    for (int j = 0; j < gamebuilds->len; j++) {
-                        struct GameBuild gamebuild_j = g_array_index(gamebuilds, struct GameBuild, j);
+                    bool found = false;
 
-                        bool found = false;
-
-                        for (int k = 0; k < gamebuild_j.patch_group_ids_len; k++) {
-                            if (strcmp(gamebuild_j.patch_group_ids[k], patch_group_ids[i]) == 0)
-                                found = true;
-                        }
-
-                        if (!found)
-                            continue;
-
-                        bool already_exists = false;
-
-                        for (int k = 0; k < gamebuild_j.offset_patches->len; k++) {
-                            struct OffsetPatch current_patch = g_array_index(gamebuild_j.offset_patches, struct OffsetPatch, k);
-
-                            if (strcmp(current_patch.description, offset_patch.description) == 0) {
-                                already_exists = true;
-                                break;
-                            }
-                        }
-
-                        if (already_exists)
-                            break;
-
-                        g_array_append_val(gamebuild_j.offset_patches, offset_patch);
+                    for (int k = 0; k < gamebuild.patch_group_ids_len; k++) {
+                        if (strcmp(gamebuild.patch_group_ids[k], patch_group_ids[i]) == 0)
+                            found = true;
                     }
+
+                    if (!found)
+                        continue;
+
+                    struct OffsetPatch *current_patch;
+                    bool already_exists = false;
+
+                    cvector_for_each_in(current_patch, gamebuild.offset_patches) {
+                        if (strcmp(current_patch->description, offset_patch.description) == 0) {
+                            already_exists = true;
+                            break;
+                        }
+                    }
+
+                    if (already_exists)
+                        break;
+
+                    cvector_push_back(gamebuild.offset_patches, offset_patch);
                 }
             }
             else {
                 unsigned char *hex_pattern = hex_to_bytes(patch_data[3]);
-
                 struct PatternPatch pattern_patch;
 
                 pattern_patch.description = strdup(patch_data[0]);
@@ -238,39 +264,38 @@ int load_patch_defs(void)
                 free(hex_pattern);
                 free(hex_patch);
 
-                if (pattern_patch.description[0] == '\0')
+                if (pattern_patch.description[0] == '\0') {
+                    free(patch_data);
+                    free(patch_group_ids);
+                    free(data_def);
                     continue;
+                }
                 
                 for (int i = 0; i < patch_group_ids_len; i++) {
-                    for (int j = 0; j < gamebuilds->len; j++) {
-                        struct GameBuild gamebuild_j = g_array_index(gamebuilds, struct GameBuild, j);
+                    bool found = false;
 
-                        bool found = false;
-
-                        for (int k = 0; k < gamebuild_j.patch_group_ids_len; k++) {
-                            if (strcmp(gamebuild_j.patch_group_ids[k], patch_group_ids[i]) == 0)
-                                found = true;
-                        }
-
-                        if (!found)
-                            continue;
-
-                        bool already_exists = false;
-
-                        for (int k = 0; k < gamebuild_j.pattern_patches->len; k++) {
-                            struct PatternPatch current_patch = g_array_index(gamebuild_j.pattern_patches, struct PatternPatch, k);
-
-                            if (strcmp(current_patch.description, pattern_patch.description) == 0) {
-                                already_exists = true;
-                                break;
-                            }
-                        }
-
-                        if (already_exists)
-                            break;
-
-                        g_array_append_val(gamebuild_j.pattern_patches, pattern_patch);
+                    for (int k = 0; k < gamebuild.patch_group_ids_len; k++) {
+                        if (strcmp(gamebuild.patch_group_ids[k], patch_group_ids[i]) == 0)
+                            found = true;
                     }
+
+                    if (!found)
+                        continue;
+
+                    struct PatternPatch *current_patch;
+                    bool already_exists = false;
+
+                    cvector_for_each_in(current_patch, gamebuild.pattern_patches) {
+                        if (strcmp(current_patch->description, pattern_patch.description) == 0) {
+                            already_exists = true;
+                            break;
+                        }
+                    }
+
+                    if (already_exists)
+                        break;
+
+                    cvector_push_back(gamebuild.pattern_patches, pattern_patch);
                 }
             }
 
@@ -281,70 +306,24 @@ int load_patch_defs(void)
         free(data_def);
     }
 
-    return 0;
-}
-
-// Check if there are any patches loaded
-bool any_patches_loaded(void)
-{   
-    for (int i = 0; i < gamebuilds->len; i++) {
-        struct GameBuild gamebuild_i = g_array_index(gamebuilds, struct GameBuild, i);
-
-        if (gamebuild_i.offset_patches->len > 0 || gamebuild_i.pattern_patches->len > 0)
-            return true;
-    }
-
-    return false;
-}
-
-// Get the given executable's gamebuild from the patch defs
-struct GameBuild *get_gamebuild(const char *filepath)
-{
-    if (*filepath == '\0')
-        return NULL;
-
-    char *file_md5 = get_md5_hash(filepath);
-
-    for (int i = 0; i < gamebuilds->len; i++) {
-        struct GameBuild* gamebuild_i = &g_array_index(gamebuilds, struct GameBuild, i);
-
-        if (strcmp(gamebuild_i->md5_checksum, file_md5) == 0) {
-            free(file_md5);
-            return gamebuild_i;
-        }
-    }
-
-    free(file_md5);
-    return NULL;
+    return gamebuild;
 }
 
 // Apply the loaded patches to the executable
-struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset_patches, GArray *pattern_patches)
+struct PatchingResult *apply_patches(const char *binary_filepath,
+    cvector_vector_type(struct OffsetPatch) offset_patches, cvector_vector_type(struct PatternPatch) pattern_patches)
 {
-    struct PatchingResult *patching_results = malloc((pattern_patches->len + offset_patches->len) * sizeof(struct PatchingResult));
+    struct PatchingResult *patching_results = malloc((cvector_size(pattern_patches) + cvector_size(offset_patches)) * sizeof(struct PatchingResult));
 
     if (!patching_results) {
         fprintf(stderr, "ERROR: Failed to allocate memory for patching results!\n");
         exit(1);
     }
 
-    for (int i = 0; i < offset_patches->len; i++) {
-        struct OffsetPatch *offset_patch_i = &g_array_index(offset_patches, struct OffsetPatch, i);
+    int i = 0;
+    struct PatternPatch *pattern_patch_i;
 
-        struct PatchingResult patching_result = {
-            strdup(offset_patch_i->description),
-            offset_apply(binary_filepath, offset_patch_i)
-        };
-
-        patching_results[pattern_patches->len + i] = patching_result;
-
-        free(offset_patch_i->description);
-        free(offset_patch_i->patch_byte_array);
-    }
-
-    for (int i = 0; i < pattern_patches->len; i++) {
-        struct PatternPatch *pattern_patch_i = &g_array_index(pattern_patches, struct PatternPatch, i);
-
+    cvector_for_each_in(pattern_patch_i, pattern_patches) {
         struct PatchingResult patching_result = {
             strdup(pattern_patch_i->description),
             pattern_apply(binary_filepath, pattern_patch_i)
@@ -355,6 +334,22 @@ struct PatchingResult *apply_patches(const char *binary_filepath, GArray *offset
         free(pattern_patch_i->description);
         free(pattern_patch_i->pattern);
         free(pattern_patch_i->patch_byte_array);
+        i++;
+    }
+
+    struct OffsetPatch *offset_patch_i;
+
+    cvector_for_each_in(offset_patch_i, offset_patches) {
+        struct PatchingResult patching_result = {
+            strdup(offset_patch_i->description),
+            offset_apply(binary_filepath, offset_patch_i)
+        };
+
+        patching_results[i] = patching_result;
+
+        free(offset_patch_i->description);
+        free(offset_patch_i->patch_byte_array);
+        i++;
     }
 
     return patching_results;

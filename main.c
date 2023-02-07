@@ -90,37 +90,28 @@ int main(int argc, char **argv)
     // Load patches from the patch defs file
     printf("\nLoading patch definitions file...\n");
 
-    if(load_patch_defs() == -1) {
+    char *exe_md5 = get_md5_hash(filepath);
+    struct GameBuild gamebuild = load_patch_defs(exe_md5);
+    free(exe_md5);
+
+    if (gamebuild.offset_patches == NULL && gamebuild.pattern_patches == NULL) {
         fprintf(stderr, "ERROR: Failed to load patches!\n");
         return 1;
     }
 
-    if (!any_patches_loaded()) {
-        fprintf(stderr, "ERROR: Failed to load patches!\n");
-        return 1;
-    }
-
-    printf("Done.\n");
-
-    // Get executable's gamebuild
-    printf("\nChecking game builds...\n");
-
-    struct GameBuild *gamebuild = get_gamebuild(filepath);
-
-    if (!gamebuild) {
-        fprintf(stderr, "ERROR: Unable to load patches: Unsupported game build.\n");
-        return 1;
-    }
-
-    printf("%s detected.\n", gamebuild->id);
+    printf("%s detected.\n", gamebuild.id);
 
     // Apply patches to the executable
     printf("\nApplying patches...\n");
 
+    int total_patches = cvector_size(gamebuild.offset_patches) + cvector_size(gamebuild.pattern_patches);
     int successes = 0;
-    struct PatchingResult *patching_result = apply_patches(filepath, gamebuild->offset_patches, gamebuild->pattern_patches);
 
-    for (int i = 0; i < gamebuild->offset_patches->len + gamebuild->pattern_patches->len; i++) {
+    struct PatchingResult *patching_result = apply_patches(filepath, gamebuild.offset_patches, gamebuild.pattern_patches);
+    cvector_free(gamebuild.offset_patches);
+    cvector_free(gamebuild.pattern_patches);
+
+    for (int i = 0; i < total_patches; i++) {
         if (patching_result[i].success) {
             successes++;
             printf("%s: Success\n", patching_result[i].description);
@@ -132,11 +123,8 @@ int main(int argc, char **argv)
         free(patching_result[i].description);
     }
 
-    int patches_applied = (int)(gamebuild->offset_patches->len + gamebuild->pattern_patches->len);
-
     free(patching_result);
-    g_array_free(gamebuilds, true);
 
-    printf("\n%d out of %d applied.\n", successes, patches_applied);
-    return (successes == patches_applied) ? 0 : 1;
+    printf("\n%d out of %d applied.\n", successes, total_patches);
+    return (successes == total_patches) ? 0 : 1;
 }

@@ -4,6 +4,8 @@ project(EternalPatcher)
 set(CMAKE_C_STANDARD 99)
 
 file(GLOB SOURCES
+        ./cvector/cvector.h
+        ./cvector/cvector_utils.h
         ./eternalpatcher.h
         ./main.c
         ./patcher.c
@@ -15,9 +17,6 @@ file(GLOB SOURCES
 find_package(PkgConfig REQUIRED)
 find_package(CURL REQUIRED)
 find_package(OpenSSL "3.0" REQUIRED)
-
-pkg_check_modules(GLIB REQUIRED glib-2.0)
-include_directories(${GLIB_INCLUDE_DIRS})
 
 set (CMAKE_C_FLAGS "-O2 -DNDEBUG")
 add_executable(EternalPatcher ${SOURCES})
