@@ -1,0 +1,38 @@
+name: Test static build
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Alpine
+      uses: jirutka/setup-alpine@v1
+      with:
+        branch: v3.17
+
+    - name: Install dependencies
+      run: apk add build-base cmake curl-dev curl-static nghttp2-dev nghttp2-static libssh2-dev libssh2-static brotli-static openssl-libs-static zlib-static
+      shell: alpine.sh {0}
+
+    - name: Configure CMake
+      run: cmake -B ${{ github.workspace }}/build
+      shell: alpine.sh {0}
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build
+      shell: alpine.sh {0}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: static
+        path: ${{ github.workspace }}/build/EternalPatcher
