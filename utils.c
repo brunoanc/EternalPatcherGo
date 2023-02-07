@@ -100,7 +100,7 @@ char *get_md5_hash(const char *filename)
         return "";
 
     int read;
-    int md5_length;
+    unsigned int md5_length;
     unsigned char data[4096];
     unsigned char hash[MD5_DIGEST_LENGTH];
 

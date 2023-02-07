@@ -18,7 +18,7 @@ find_package(PkgConfig REQUIRED)
 find_package(CURL REQUIRED)
 find_package(OpenSSL "3.0" REQUIRED)
 
-set (CMAKE_C_FLAGS "-O2 -DNDEBUG")
+set (CMAKE_C_FLAGS "-O2 -Wall -Werror")
 add_executable(EternalPatcher ${SOURCES})
 
 target_link_libraries(EternalPatcher CURL::libcurl OpenSSL::Crypto ${GLIB_LDFLAGS})
