@@ -59,10 +59,13 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
       shell: alpine.sh {0}
 
+    - name: Rename
+      run: mv ${{ github.workspace }}/build/EternalPatcher ${{ github.workspace }}/build/EternalPatcher-static
+
     - name: Upload static binary
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file_glob: true
-        file: "**/EternalPatcher"
+        file: "**/EternalPatcher-static"
         tag: ${{ github.ref }}
