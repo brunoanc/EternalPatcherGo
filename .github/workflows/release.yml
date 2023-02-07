@@ -26,15 +26,18 @@ jobs:
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
 
-    - uses: marvinpinto/action-automatic-releases@latest
+    - name: Upload binary
+      uses: svenstaro/upload-release-action@v2
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        files: |
-          **/EternalPatcher
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file_glob: true
+        file: "**/EternalPatcher"
+        tag: ${{ github.ref }}
 
   release-static:
     runs-on: ubuntu-latest
+    env:
+      ETERNALPATCHERLINUX_STATIC: '1'
 
     steps:
     - uses: actions/checkout@v3
