@@ -14,11 +14,22 @@ file(GLOB SOURCES
         ./curl.c
         )
 
-find_package(PkgConfig REQUIRED)
-find_package(CURL REQUIRED)
-find_package(OpenSSL "3.0" REQUIRED)
+if(DEFINED ENV{ETERNALPATCHERLINUX_STATIC})
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(CURL REQUIRED libcurl)
+        pkg_check_modules(OPENSSL REQUIRED openssl)
+        pkg_check_modules(BROTLICOMMON REQUIRED libbrotlicommon)
+        set(CMAKE_C_FLAGS "${CURL_STATIC_CFLAGS} ${OPENSSL_STATIC_CFLAGS} ${BROTLICOMMON_STATIC_CFLAGS} -static -O2 -Wall -Werror -s")
+else()
+        find_package(CURL REQUIRED)
+        find_package(OpenSSL "3.0" REQUIRED)
+        set(CMAKE_C_FLAGS "-O2 -Wall -Werror -s")
+endif()
 
-set (CMAKE_C_FLAGS "-O2 -Wall -Werror")
 add_executable(EternalPatcher ${SOURCES})
 
-target_link_libraries(EternalPatcher CURL::libcurl OpenSSL::Crypto ${GLIB_LDFLAGS})
+if(DEFINED ENV{ETERNALPATCHERLINUX_STATIC})
+  target_link_libraries(EternalPatcher ${CURL_STATIC_LIBRARIES} ${OPENSSL_STATIC_LIBRARIES} ${BROTLICOMMON_STATIC_LIBRARIES})
+else()
+        target_link_libraries(EternalPatcher CURL::libcurl OpenSSL::Crypto)
+endif()
