@@ -51,7 +51,7 @@ int get_update_server(void)
         return -1;
     }
 
-    strcpy(update_server, equals + 2);
+    strncpy(update_server, 128, equals + 2);
 
     char *semicolon = strchr(update_server, ';');
 
