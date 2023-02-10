@@ -126,7 +126,7 @@ int download_patch_defs(void)
     CURLcode res;
 
     char download_url[256];
-    sprintf(download_url, "http://%s/EternalPatcher_v%d.def", update_server, patcher_version);
+    snprintf(download_url, 256, "http://%128s/EternalPatcher_v%d.def", update_server, patcher_version);
 
     curl = curl_easy_init();
 

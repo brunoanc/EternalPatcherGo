@@ -121,7 +121,7 @@ char *get_md5_hash(const char *filename)
     }
 
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
-        sprintf(hash_str + 2 * i, "%02x", hash[i]);
+        snprintf(hash_str + 2 * i, MD5_DIGEST_LENGTH * 2 + 1, "%02x", hash[i]);
     
     return hash_str;
 }
