@@ -39,7 +39,7 @@ bool update_available(void)
         return true;
 
     char patch_defs_md5_webpage[256];
-    snprintf(patch_defs_md5_webpage, 256, "http://%128s/EternalPatcher_v%d.md5", update_server, patcher_version);
+    snprintf(patch_defs_md5_webpage, 255, "http://%128s/EternalPatcher_v%d.md5", update_server, patcher_version);
 
     char *latest_patch_defs_md5 = get_latest_patch_defs_md5(patch_defs_md5_webpage);
 

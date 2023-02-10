@@ -51,7 +51,7 @@ int get_update_server(void)
         return -1;
     }
 
-    strncpy(update_server, 128, equals + 2);
+    strncpy(update_server, equals + 2, 127);
 
     char *semicolon = strchr(update_server, ';');
 
@@ -126,7 +126,7 @@ int download_patch_defs(void)
     CURLcode res;
 
     char download_url[256];
-    snprintf(download_url, 256, "http://%128s/EternalPatcher_v%d.def", update_server, patcher_version);
+    snprintf(download_url, 255, "http://%128s/EternalPatcher_v%d.def", update_server, patcher_version);
 
     curl = curl_easy_init();
 
