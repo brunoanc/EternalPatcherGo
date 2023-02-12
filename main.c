@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "eternalpatcher.h"
 
 int main(int argc, char **argv)
@@ -61,13 +60,18 @@ int main(int argc, char **argv)
     }
 
     // Update the patch definitions file
+    char update_server[128];
+
     if (update) {
         printf("Checking for updates...\n");
 
-        if (update_available()) {
+        if (!get_update_server(update_server))
+            return 1;
+
+        if (update_available(update_server)) {
             printf("Downloading latest patch definitions...\n");
 
-            if (download_patch_defs() == -1)
+            if (!download_patch_defs(update_server))
                 return 1;
 
             FILE *patch_defs = fopen("EternalPatcher.def", "r");

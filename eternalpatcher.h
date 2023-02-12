@@ -19,6 +19,8 @@
 #ifndef ETERNALPATCHER_H
 #define ETERNALPATCHER_H
 
+#define PATCHER_VERSION 3
+
 #include <stdbool.h>
 #include "cvector/cvector.h"
 #include "cvector/cvector_utils.h"
@@ -53,20 +55,16 @@ struct GameBuild {
     cvector_vector_type(struct PatternPatch) pattern_patches;
 };
 
-// Global variables
-extern const int patcher_version;
-extern char update_server[128];
-
 // Patcher
-bool update_available(void);
+bool update_available(const char update_server[static 128]);
 struct GameBuild load_patch_defs(const char *exe_md5);
 struct PatchingResult *apply_patches(const char *binary_filepath,
     cvector_vector_type(struct OffsetPatch) offset_patches, cvector_vector_type(struct PatternPatch) pattern_patches);
 
-// Curl
-int get_update_server(void);
+// curl
+bool get_update_server(char update_server[static 128]);
 char *get_latest_patch_defs_md5(const char *webpage);
-int download_patch_defs(void);
+bool download_patch_defs(const char update_server[static 128]);
 
 // Apply patches
 bool offset_apply(const char *binary_filepath, struct OffsetPatch *patch);

@@ -20,24 +20,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <curl/curl.h>
-
 #include "eternalpatcher.h"
 
-char update_server[128];
-
 // Get update server from config file
-int get_update_server(void)
+bool get_update_server(char update_server[static 128])
 {
     FILE *config = fopen("EternalPatcher.config", "r");
 
     if (!config) {
         fprintf(stderr, "ERROR: Failed to open config file!\n");
-        return -1;
+        return false;
     }
 
     if(!fgets(update_server, 128, config)) {
         fprintf(stderr, "ERROR: Failed to read from config file!\n");
-        return -1;
+        return false;
     }
 
     fclose(config);
@@ -48,7 +45,7 @@ int get_update_server(void)
 
     if (!equals) {
         fprintf(stderr, "ERROR: Failed to parse config file!\n");
-        return -1;
+        return false;
     }
 
     strncpy(update_server, equals + 2, 127);
@@ -57,12 +54,12 @@ int get_update_server(void)
 
     if (!semicolon) {
         fprintf(stderr, "ERROR: Failed to parse config file!\n");
-        return -1;
+        return false;
     }
 
     *(semicolon - 1) = '\0';
 
-    return 0;
+    return true;
 }
 
 // Used to write data to memory from curl
@@ -119,14 +116,14 @@ char *get_latest_patch_defs_md5(const char *webpage)
 }
 
 // Download the latest patch definitions from the update server
-int download_patch_defs(void)
+bool download_patch_defs(const char update_server[static 128])
 {
     CURL *curl;
     FILE *fp;
     CURLcode res;
 
     char download_url[256];
-    snprintf(download_url, 255, "http://%128s/EternalPatcher_v%d.def", update_server, patcher_version);
+    snprintf(download_url, 255, "http://%.128s/EternalPatcher_v%d.def", update_server, PATCHER_VERSION);
 
     curl = curl_easy_init();
 
@@ -140,15 +137,15 @@ int download_patch_defs(void)
 
         if (res != CURLE_OK) {
             fprintf(stderr, "ERROR: Failed to download latest patch definitions!\n");
-            return -1;
+            return false;
         }
 
         curl_easy_cleanup(curl);
         fclose(fp);
 
-        return 0;
+        return true;
     }
 
     fprintf(stderr, "ERROR: Failed to download latest patch definitions!\n");
-    return -1;
+    return false;
 }

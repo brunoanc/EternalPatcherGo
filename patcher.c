@@ -19,27 +19,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "eternalpatcher.h"
 
 #define OFFSET_PATCH 0
 #define PATTERN_PATCH 1
 
-const int patcher_version = 3;
-
 // Check if there is any patch defs update available
-bool update_available(void)
+bool update_available(const char update_server[static 128])
 {
-    if (get_update_server() == -1)
-        return false;
-
     char *patch_defs_md5 = get_md5_hash("EternalPatcher.def");
 
     if (patch_defs_md5[0] == '\0')
         return true;
 
     char patch_defs_md5_webpage[256];
-    snprintf(patch_defs_md5_webpage, 255, "http://%128s/EternalPatcher_v%d.md5", update_server, patcher_version);
+    snprintf(patch_defs_md5_webpage, 255, "http://%.128s/EternalPatcher_v%d.md5", update_server, PATCHER_VERSION);
 
     char *latest_patch_defs_md5 = get_latest_patch_defs_md5(patch_defs_md5_webpage);
 
