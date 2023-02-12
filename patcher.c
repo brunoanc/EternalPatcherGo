@@ -24,33 +24,6 @@
 #define OFFSET_PATCH 0
 #define PATTERN_PATCH 1
 
-// Check if there is any patch defs update available
-bool update_available(const char update_server[static 128])
-{
-    char *patch_defs_md5 = get_md5_hash("EternalPatcher.def");
-
-    if (patch_defs_md5[0] == '\0')
-        return true;
-
-    char patch_defs_md5_webpage[256];
-    snprintf(patch_defs_md5_webpage, 255, "http://%.128s/EternalPatcher_v%d.md5", update_server, PATCHER_VERSION);
-
-    char *latest_patch_defs_md5 = get_latest_patch_defs_md5(patch_defs_md5_webpage);
-
-    if (latest_patch_defs_md5 == NULL || *latest_patch_defs_md5 == '\0')
-        return false;
-
-    bool update_available = false;
-
-    if (strcmp(patch_defs_md5, latest_patch_defs_md5) != 0)
-        update_available = true;
-
-    free(patch_defs_md5);
-    free(latest_patch_defs_md5);
-
-    return update_available;
-}
-
 // Load patch defs from file
 struct GameBuild load_patch_defs(const char *exe_md5)
 {
@@ -66,7 +39,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
     FILE *patch_defs = fopen("EternalPatcher.def", "rb");
 
     if (!patch_defs) {
-        fprintf(stderr, "ERROR: Failed to open patches file!\n");
+        perror("ERROR: Failed to open patches file");
         return gamebuild;
     }
 
@@ -120,7 +93,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
             gamebuild.patch_group_ids_len = patch_group_ids_len;
 
             if (!gamebuild.id || !gamebuild.exe_filename || !gamebuild.md5_checksum || !gamebuild.patch_group_ids) {
-                fprintf(stderr, "ERROR: Failed to allocate memory for gamebuild!\n");
+                perror("ERROR: Failed to allocate memory");
                 exit(1);
             }
 
@@ -131,7 +104,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
             free(patch_group_ids);
         }
         else {
-            if (gamebuild.id == NULL) {
+            if (!gamebuild.id) {
                 free(data_def);
                 continue;
             }
@@ -181,7 +154,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
                 free(data_def);
                 continue;
             }
-            
+
             for (int i = 0; i < patch_group_ids_len; i++)
                 rm_whitespace(patch_group_ids[i]);
 
@@ -196,7 +169,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
                 offset_patch.patch_byte_array_len = (int)strlen(patch_data[4]) / 2;
 
                 if (!offset_patch.description || !offset_patch.patch_byte_array) {
-                    fprintf(stderr, "ERROR: Failed to allocate memory for offset patch!\n");
+                    perror("ERROR: Failed to allocate memory");
                     exit(1);
                 }
 
@@ -248,7 +221,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
                 pattern_patch.patch_byte_array_len = (int)strlen(patch_data[4]) / 2;
 
                 if (!pattern_patch.description || !pattern_patch.pattern || !pattern_patch.patch_byte_array) {
-                    fprintf(stderr, "ERROR: Failed to allocate memory for pattern patch!\n");
+                    perror("ERROR: Failed to allocate memory");
                     exit(1);
                 }
 
@@ -264,7 +237,7 @@ struct GameBuild load_patch_defs(const char *exe_md5)
                     free(data_def);
                     continue;
                 }
-                
+
                 for (int i = 0; i < patch_group_ids_len; i++) {
                     bool found = false;
 
@@ -300,6 +273,8 @@ struct GameBuild load_patch_defs(const char *exe_md5)
         free(data_def);
     }
 
+    fclose(patch_defs);
+
     return gamebuild;
 }
 
@@ -310,7 +285,7 @@ struct PatchingResult *apply_patches(const char *binary_filepath,
     struct PatchingResult *patching_results = malloc((cvector_size(pattern_patches) + cvector_size(offset_patches)) * sizeof(struct PatchingResult));
 
     if (!patching_results) {
-        fprintf(stderr, "ERROR: Failed to allocate memory for patching results!\n");
+        perror("ERROR: Failed to allocate memory");
         exit(1);
     }
 

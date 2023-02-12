@@ -25,6 +25,10 @@
 #include "cvector/cvector.h"
 #include "cvector/cvector_utils.h"
 
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
+#define MD5_DIGEST_LENGTH 16
+
 struct PatternPatch {
     char *description;
     unsigned char *pattern;
@@ -56,14 +60,13 @@ struct GameBuild {
 };
 
 // Patcher
-bool update_available(const char update_server[static 128]);
 struct GameBuild load_patch_defs(const char *exe_md5);
 struct PatchingResult *apply_patches(const char *binary_filepath,
     cvector_vector_type(struct OffsetPatch) offset_patches, cvector_vector_type(struct PatternPatch) pattern_patches);
 
 // curl
 bool get_update_server(char update_server[static 128]);
-char *get_latest_patch_defs_md5(const char *webpage);
+bool get_latest_patch_defs_md5(const char update_server[static 128], char md5[static MD5_DIGEST_LENGTH * 2 + 1]);
 bool download_patch_defs(const char update_server[static 128]);
 
 // Apply patches
@@ -74,6 +77,6 @@ bool pattern_apply(const char *binary_filepath, struct PatternPatch *patch);
 void split_string(char *str, const char delimiter, char ***array, int *array_len);
 unsigned char *hex_to_bytes(const char *str);
 void rm_whitespace(char *str);
-char *get_md5_hash(const char *filename);
+bool get_md5_hash(const char *filename, char md5[MD5_DIGEST_LENGTH * 2 + 1]);
 
 #endif

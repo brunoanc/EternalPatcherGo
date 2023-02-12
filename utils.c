@@ -21,8 +21,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <openssl/evp.h>
-
-#define MD5_DIGEST_LENGTH 16
+#include "eternalpatcher.h"
 
 // Split a given string using the given char as a delimiter into the given array
 void split_string(char *str, const char delimiter, char ***array, int *array_len)
@@ -39,14 +38,14 @@ void split_string(char *str, const char delimiter, char ***array, int *array_len
     *array = malloc(*array_len * sizeof(char*));
 
     if (!(*array)) {
-        fprintf(stderr, "ERROR: Failed to allocate memory for string!\n");
+        perror("ERROR: Failed to allocate memory");
         exit(1);
     }
 
     for (int i = *array_len - 1; i > 0; i--) {
         char *pos = strrchr(str, delimiter);
 
-        if (pos == NULL)
+        if (!pos)
             continue;
 
         *pos = '\0';
@@ -62,7 +61,7 @@ unsigned char *hex_to_bytes(const char *str)
     unsigned char *bytes = malloc(strlen(str) / 2);
 
     if (!bytes) {
-        fprintf(stderr, "ERROR: Failed to allocate memory for bytes\n");
+        perror("ERROR: Failed to allocate memory");
         exit(1);
     }
 
@@ -92,12 +91,12 @@ void rm_whitespace(char *str)
 }
 
 // Get file's MD5 hash
-char *get_md5_hash(const char *filename)
+bool get_md5_hash(const char *filename, char md5[MD5_DIGEST_LENGTH * 2 + 1])
 {
     FILE *f = fopen(filename, "rb");
 
     if (!f)
-        return "";
+        return false;
 
     int read;
     unsigned int md5_length;
@@ -110,18 +109,13 @@ char *get_md5_hash(const char *filename)
     while ((read = (int)fread(data, 1, 4096, f)) != 0)
         EVP_DigestUpdate(ctx, data, read);
 
+    fclose(f);
+
     EVP_DigestFinal_ex(ctx, hash, &md5_length);
     EVP_MD_CTX_free(ctx);
 
-    char *hash_str = malloc(MD5_DIGEST_LENGTH * 2 + 1);
-
-    if (!hash_str) {
-        fprintf(stderr, "ERROR: Failed to allocate memory for MD5 hash!\n");
-        exit(1);
-    }
-
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
-        snprintf(hash_str + 2 * i, MD5_DIGEST_LENGTH * 2, "%02x", hash[i]);
-    
-    return hash_str;
+        snprintf(md5 + 2 * i, 3, "%02x", hash[i]);
+
+    return true;
 }

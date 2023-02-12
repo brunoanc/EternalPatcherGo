@@ -42,12 +42,19 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--patch") == 0 && !patch) {
             if (i > argc - 2) {
-                fprintf(stderr, "ERROR: No executable was specified for patching!\n");
+                eprintf("ERROR: No executable was specified for patching.\n");
                 return 1;
             }
 
             patch = true;
             filepath = argv[i + 1];
+
+            FILE *f = fopen(filepath, "rb+");
+
+            if (!f) {
+                perror("ERROR: Failed to open executable path");
+                return 1;
+            }
         }
         else if (strcmp(argv[i], "--update") == 0) {
             update = true;
@@ -55,7 +62,7 @@ int main(int argc, char **argv)
     }
 
     if (!patch && !update) {
-        fprintf(stderr, "ERROR: Unrecognized options! Run %s to see all possible arguments.\n", argv[0]);
+        eprintf("ERROR: Unrecognized options! Run %s to see all possible arguments.\n", argv[0]);
         return 1;
     }
 
@@ -68,16 +75,20 @@ int main(int argc, char **argv)
         if (!get_update_server(update_server))
             return 1;
 
-        if (update_available(update_server)) {
+        char patch_defs_md5[MD5_DIGEST_LENGTH * 2 + 1];
+        char latest_patch_defs_md5[MD5_DIGEST_LENGTH * 2 + 1];
+
+        if (!get_latest_patch_defs_md5(update_server, latest_patch_defs_md5))
+            return 1;
+
+        if (!get_md5_hash("EternalPatcher.def", patch_defs_md5) || strcmp(patch_defs_md5, latest_patch_defs_md5) != 0) {
             printf("Downloading latest patch definitions...\n");
 
             if (!download_patch_defs(update_server))
                 return 1;
 
-            FILE *patch_defs = fopen("EternalPatcher.def", "r");
-
-            if (!patch_defs) {
-                fprintf(stderr, "ERROR: Failed to download the latest patch definitions!\n");
+            if (!get_md5_hash("EternalPatcher.def", patch_defs_md5) || strcmp(patch_defs_md5, latest_patch_defs_md5) != 0) {
+                eprintf("ERROR: Failed to download the latest patch definitions.\n");
                 return 1;
             }
 
@@ -94,12 +105,13 @@ int main(int argc, char **argv)
     // Load patches from the patch defs file
     printf("\nLoading patch definitions file...\n");
 
-    char *exe_md5 = get_md5_hash(filepath);
-    struct GameBuild gamebuild = load_patch_defs(exe_md5);
-    free(exe_md5);
+    char exe_md5[MD5_DIGEST_LENGTH * 2 + 1];
+    get_md5_hash(filepath, exe_md5);
 
-    if (gamebuild.offset_patches == NULL && gamebuild.pattern_patches == NULL) {
-        fprintf(stderr, "ERROR: Failed to load patches!\n");
+    struct GameBuild gamebuild = load_patch_defs(exe_md5);
+
+    if (!gamebuild.offset_patches && !gamebuild.pattern_patches) {
+        eprintf("ERROR: Failed to find patches for the provided executable.\n");
         return 1;
     }
 

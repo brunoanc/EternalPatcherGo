@@ -28,12 +28,13 @@ bool get_update_server(char update_server[static 128])
     FILE *config = fopen("EternalPatcher.config", "r");
 
     if (!config) {
-        fprintf(stderr, "ERROR: Failed to open config file!\n");
+        perror("ERROR: Failed to open config file");
         return false;
     }
 
     if(!fgets(update_server, 128, config)) {
-        fprintf(stderr, "ERROR: Failed to read from config file!\n");
+        perror("ERROR: Failed to read from config file");
+        fclose(config);
         return false;
     }
 
@@ -44,7 +45,7 @@ bool get_update_server(char update_server[static 128])
     char *equals = strchr(update_server, '=');
 
     if (!equals) {
-        fprintf(stderr, "ERROR: Failed to parse config file!\n");
+        eprintf("ERROR: Failed to parse config file.\n");
         return false;
     }
 
@@ -53,7 +54,7 @@ bool get_update_server(char update_server[static 128])
     char *semicolon = strchr(update_server, ';');
 
     if (!semicolon) {
-        fprintf(stderr, "ERROR: Failed to parse config file!\n");
+        eprintf("ERROR: Failed to parse config file.\n");
         return false;
     }
 
@@ -72,7 +73,7 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
     sz += currsz;
     void *tmp = realloc(*(char**)ctx, sz);
 
-    if (tmp == NULL) {
+    if (!tmp) {
         free(*(char**)ctx);
         *(char**)ctx = NULL;
         return 0;
@@ -86,8 +87,11 @@ size_t write_clbk(void *data, size_t blksz, size_t nblk, void *ctx)
 }
 
 // Get latest patch definitions MD5 from the update server
-char *get_latest_patch_defs_md5(const char *webpage)
+bool get_latest_patch_defs_md5(const char update_server[static 128], char md5[static MD5_DIGEST_LENGTH * 2 + 1])
 {
+    char webpage[256];
+    snprintf(webpage, 255, "http://%.128s/EternalPatcher_v%d.md5", update_server, PATCHER_VERSION);
+
     CURL *curl;
     CURLcode res;
     char *pagedata = NULL;
@@ -103,16 +107,28 @@ char *get_latest_patch_defs_md5(const char *webpage)
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "ERROR: Failed to get latest patch definitions MD5 checksum!\n");
-            return "";
+            eprintf("ERROR: Failed to get latest patch definitions MD5 checksum: %s\n", curl_easy_strerror(res));
+
+            if (pagedata)
+                free(pagedata);
+
+            curl_easy_cleanup(curl);
+
+            return false;
         }
 
         curl_easy_cleanup(curl);
-        return pagedata;
+
+        memcpy(md5, pagedata, MD5_DIGEST_LENGTH * 2);
+        md5[MD5_DIGEST_LENGTH * 2] = '\0';
+
+        free(pagedata);
+
+        return true;
     }
 
-    fprintf(stderr, "ERROR: Failed to get latest patch definitions MD5 checksum!\n");
-    return "";
+    eprintf("ERROR: Failed to get latest patch definitions MD5 checksum.\n");
+    return false;
 }
 
 // Download the latest patch definitions from the update server
@@ -136,7 +152,8 @@ bool download_patch_defs(const char update_server[static 128])
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "ERROR: Failed to download latest patch definitions!\n");
+            eprintf("ERROR: Failed to download the latest patch definitions: %s\n", curl_easy_strerror(res));
+            curl_easy_cleanup(curl);
             return false;
         }
 
@@ -146,6 +163,6 @@ bool download_patch_defs(const char update_server[static 128])
         return true;
     }
 
-    fprintf(stderr, "ERROR: Failed to download latest patch definitions!\n");
+    eprintf("ERROR: Failed to download the latest patch definitions.\n");
     return false;
 }
