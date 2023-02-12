@@ -56,8 +56,10 @@ struct GameBuild load_patch_defs(const char *exe_md5)
 
         split_string(current_line, '=', &data_def, &data_def_len);
 
-        if (data_def_len <= 1)
+        if (data_def_len <= 1) {
+            free(data_def);
             continue;
+        }
 
         if (strcmp(data_def[0], "patch") != 0) {
             char **gamebuild_data;

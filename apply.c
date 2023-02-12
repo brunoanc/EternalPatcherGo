@@ -77,6 +77,7 @@ bool pattern_apply(const char *binary_filepath, struct PatternPatch *patch)
     while (ftell(exe) < filesize) {
         if (fread(buffer, 1, buffer_size, exe) == 0) {
             perror("ERROR: Failed to read bytes from executable");
+            free(buffer);
             fclose(exe);
             return false;
         }
