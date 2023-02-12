@@ -23,7 +23,7 @@
 
 int main(int argc, char **argv)
 {
-    printf("EternalPatcherLinux v1.4.0 by PowerBall253 :)\n\n");
+    printf("EternalPatcherLinux v1.4.1 by PowerBall253 :)\n\n");
 
     bool update = false;
     bool patch = false;
