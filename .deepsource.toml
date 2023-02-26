@@ -1,4 +1,7 @@
 version = 1
 
 [[analyzers]]
-name = "cxx"
+name = "go"
+
+  [analyzers.meta]
+  import_root = "github.com/PowerBall253/EternalPatcherGo"

@@ -8,56 +8,48 @@ on:
       - '**'
 
 jobs:
-  test:
+  test-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install cURL package
-      run: |
-        sudo apt-get update
-        sudo apt-get install libcurl4-openssl-dev
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.20'
 
-    - name: Configure CMake
-      run: cmake -B ${{ github.workspace }}/build
+    - name: Get dependencies
+      run: go get .
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build
+      run: go build .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: debug
-        path: ${{ github.workspace }}/build/EternalPatcher
+        name: debug-ubuntu
+        path: ${{ github.workspace }}/EternalPatcherGo
 
-  test-static:
-    runs-on: ubuntu-latest
-    env:
-      ETERNALPATCHERLINUX_STATIC: '1'
+  test-windows:
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup Alpine
-      uses: jirutka/setup-alpine@v1
+    - name: Set up Go
+      uses: actions/setup-go@v3
       with:
-        branch: v3.17
+        go-version: '1.20'
 
-    - name: Install dependencies
-      run: apk add build-base cmake curl-dev curl-static nghttp2-dev nghttp2-static libssh2-dev libssh2-static brotli-static openssl-libs-static zlib-static
-      shell: alpine.sh --root {0}
-
-    - name: Configure CMake
-      run: cmake -B ${{ github.workspace }}/build
-      shell: alpine.sh {0}
+    - name: Get dependencies
+      run: go get .
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build
-      shell: alpine.sh {0}
+      run: go build .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: debug-static
-        path: ${{ github.workspace }}/build/EternalPatcher
+        name: debug-windows
+        path: ${{ github.workspace }}/EternalPatcherGo.exe
