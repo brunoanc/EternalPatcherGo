@@ -6,7 +6,7 @@ on:
       - "v*"
 
 jobs:
-  release:
+  release-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +39,43 @@ jobs:
     - name: Upload binary
       uses: svenstaro/upload-release-action@v2
       with:
-        repo_token: ${{ secrets.ACTIONS_TOKEN }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
         file_glob: true
         file: "**/EternalPatcher"
+        tag: ${{ github.ref }}
+
+  release-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install UPX
+      run: choco install upx
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.20'
+
+    - name: Get dependencies
+      run: go get .
+
+    - name: Get tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Build
+      run: go build -o EternalPatcher.exe -ldflags="-s -w -X 'main.Version=$RELEASE_VERSION'" .
+      shell: bash
+
+    - name: Pack with UPX
+      run: upx --best EternalPatcher.exe
+
+    - name: Upload binary
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file_glob: true
+        file: "**/EternalPatcher.exe"
         tag: ${{ github.ref }}
