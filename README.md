@@ -28,13 +28,13 @@ The project requires the [go toolchain](https://go.dev/dl/) to be compiled.
 To compile, run:
 
 ```
-go build -o EternalPatcher -ldflags="-s -w" .
+go build -o EternalPatcher -tags netgo -ldflags="-s -w" .
 ```
 
 To set a version number, build with:
 
 ```
-go build -o EternalPatcher -ldflags="-s -w -X 'main.Version=vX.Y.Z'" .
+go build -o EternalPatcher -tags netgo -ldflags="-s -w -X 'main.Version=vX.Y.Z'" .
 ```
 
 (replace vX.Y.Z with the version number you prefer).
