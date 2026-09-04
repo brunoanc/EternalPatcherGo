@@ -46,9 +46,6 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
-    - name: Install UPX
-      run: choco install upx
-
     - name: Set up Go
       uses: actions/setup-go@v7
       with:

@@ -39,11 +39,5 @@ go build -o EternalPatcher -tags netgo -ldflags="-s -w -X 'main.Version=vX.Y.Z'"
 
 (replace vX.Y.Z with the version number you prefer).
 
-Additionally, you may use [UPX](https://upx.github.io/) to compress the binary:
-
-```
-upx --best EternalPatcher
-```
-
 ## Credits
 * proteh: For creating the original EternalPatcher.
