@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: '1.20'
+        go-version: '1.26.3'
 
     - name: Get dependencies
       run: go get .
@@ -26,7 +26,7 @@ jobs:
       run: go build .
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: debug-ubuntu
         path: ${{ github.workspace }}/EternalPatcherGo
@@ -35,12 +35,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: '1.20'
+        go-version: '1.26.3'
 
     - name: Get dependencies
       run: go get .
@@ -49,7 +49,7 @@ jobs:
       run: go build .
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: debug-windows
         path: ${{ github.workspace }}/EternalPatcherGo.exe

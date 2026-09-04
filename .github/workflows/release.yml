@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Setup Alpine
       uses: jirutka/setup-alpine@v1
       with:
-        branch: v3.17
+        branch: v3.24
 
     - name: Install build dependencies
-      run: apk add build-base go upx
+      run: apk add build-base go
       shell: alpine.sh --root {0}
 
     - name: Get code dependencies
@@ -30,10 +30,6 @@ jobs:
 
     - name: Build
       run: go build -o EternalPatcher -tags netgo -ldflags="-s -w -X 'main.Version=$RELEASE_VERSION'" .
-      shell: alpine.sh {0}
-
-    - name: Pack with UPX
-      run: upx --best EternalPatcher
       shell: alpine.sh {0}
 
     - name: Upload binary
@@ -48,15 +44,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Install UPX
       run: choco install upx
 
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v7
       with:
-        go-version: '1.20'
+        go-version: '1.26.3'
 
     - name: Get dependencies
       run: go get .
@@ -68,9 +64,6 @@ jobs:
     - name: Build
       run: go build -o EternalPatcher.exe -ldflags="-s -w -X 'main.Version=$RELEASE_VERSION'" .
       shell: bash
-
-    - name: Pack with UPX
-      run: upx --best EternalPatcher.exe
 
     - name: Upload binary
       uses: svenstaro/upload-release-action@v2

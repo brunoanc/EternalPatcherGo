@@ -98,7 +98,7 @@ func getUpdateServer() (string, error) {
 // Get MD5 hash of new patch definitions from server
 func getLatestPatchDefsMD5(updateServer string) (string, error) {
 	// Get file from server
-	link := fmt.Sprintf("http://%s/EternalPatcher_v%d.md5", updateServer, PatcherVersion)
+	link := fmt.Sprintf("%s/EternalPatcher_v%d.md5", updateServer, PatcherVersion)
 	resp, err := http.Get(link)
 	if err != nil {
 		return "", err
@@ -131,7 +131,7 @@ func downloadPatchDefs(updateServer string) error {
 	defer file.Close()
 
 	// Get file from server
-	link := fmt.Sprintf("http://%s/EternalPatcher_v%d.def", updateServer, PatcherVersion)
+	link := fmt.Sprintf("%s/EternalPatcher_v%d.def", updateServer, PatcherVersion)
 	resp, err := http.Get(link)
 	if err != nil {
 		return err
