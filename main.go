@@ -111,7 +111,7 @@ func getLatestPatchDefsMD5(updateServer string) (string, error) {
 	}
 
 	// Read from http server
-	md5Bytes := make([]byte, 32)
+	md5Bytes := make([]byte, md5.Size * 2)
 	_, err = resp.Body.Read(md5Bytes)
 	if err != nil {
 		return "", err
@@ -122,14 +122,7 @@ func getLatestPatchDefsMD5(updateServer string) (string, error) {
 }
 
 // Download patch definitions from server
-func downloadPatchDefs(updateServer string) error {
-	// Create patch defs file
-	file, err := os.Create("EternalPatcher.def")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
+func downloadPatchDefs(updateServer, latestMD5 string) error {
 	// Get file from server
 	link := fmt.Sprintf("%s/EternalPatcher_v%d.def", updateServer, PatcherVersion)
 	resp, err := http.Get(link)
@@ -143,8 +136,23 @@ func downloadPatchDefs(updateServer string) error {
 		return errors.New("http request: not found")
 	}
 
-	// Copy from http server to local file
-	_, err = io.Copy(file, resp.Body)
+	// Copy up to 10 MiB from http server to buffer
+	const maxSize = 10 * 1024 * 1024
+	lr := io.LimitReader(resp.Body, maxSize)
+	body, err := io.ReadAll(lr)
+	if err != nil {
+		return err
+	}
+	if len(body) >= maxSize {
+		return errors.New("Got a file that's too big")
+	}
+	newMD5 := md5.Sum(body)
+	if hex.EncodeToString(newMD5[:]) != latestMD5 {
+		return errors.New("MD5 hash mismatch")
+	}
+
+	// Create patch defs file
+	err = os.WriteFile("EternalPatcher.def", body, 0o644)
 	if err != nil {
 		return err
 	}
@@ -533,7 +541,8 @@ func main() {
 		// Get latest patch definitions MD5
 		latestMD5, err := getLatestPatchDefsMD5(updateServer)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: Failed to get latest patch definitions' MD5: %s\n", latestMD5)
+			fmt.Fprintf(os.Stderr, "ERROR: Failed to get latest patch definitions' MD5: %s\n", err.Error())
+			os.Exit(1)
 		}
 
 		// Get current patch definitions MD5
@@ -543,7 +552,7 @@ func main() {
 		if err != nil || currentMD5 != latestMD5 {
 			// Files aren't equal, download patch definitions
 			fmt.Println("Downloading latest patch definitions...")
-			err = downloadPatchDefs(updateServer)
+			err = downloadPatchDefs(updateServer, latestMD5)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "ERROR: Failed to download latest patch definitions: %s\n", err.Error())
 				os.Exit(1)
