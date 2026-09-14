@@ -144,7 +144,7 @@ func downloadPatchDefs(updateServer, latestMD5 string) error {
 		return err
 	}
 	if len(body) >= maxSize {
-		return errors.New("Got a file that's too big")
+		return errors.New("got a file that's too big")
 	}
 	newMD5 := md5.Sum(body)
 	if hex.EncodeToString(newMD5[:]) != latestMD5 {
